@@ -24,6 +24,20 @@ router.get('/status', async (_req, res) => {
   }
 })
 
+// APP_CONFIG
+router.get('/config', async (_req, res) => {
+  try {
+    const pool = await connectDB()
+    if (!pool) return res.status(503).json({ error: 'Database not connected' })
+    const result = await pool.request().query('SELECT config_key, config_value FROM APP_CONFIG')
+    const config = Object.fromEntries(result.recordset.map(r => [r.config_key, r.config_value]))
+    return res.json(config)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    return res.status(500).json({ error: message })
+  }
+})
+
 // Add your routes here
 
 export default router
