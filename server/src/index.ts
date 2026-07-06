@@ -12,14 +12,12 @@ app.use(express.json())
 // API routes
 app.use('/api', apiRouter)
 
-// Serve React build in production
-if (process.env.NODE_ENV === 'production') {
-  const publicPath = path.join(__dirname, '..', 'public')
-  app.use(express.static(publicPath))
-  app.get('*', (_req, res) => {
-    res.sendFile(path.join(publicPath, 'index.html'))
-  })
-}
+// Serve React build
+const publicPath = path.join(__dirname, '..', 'public')
+app.use(express.static(publicPath))
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'))
+})
 
 async function start() {
   try {
