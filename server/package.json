@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "migrate": "ts-node --transpile-only src/migrate.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -11,6 +12,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mssql": "^11.0.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   },
   "devDependencies": {
