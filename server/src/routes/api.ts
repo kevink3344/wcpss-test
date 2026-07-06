@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { connectDB, sql } from '../db'
+import db from '../db'
 
 const router = Router()
 
@@ -11,13 +11,12 @@ router.get('/health', (_req, res) => {
 // Database connection status
 router.get('/status', async (_req, res) => {
   try {
-    const pool = await connectDB()
-    if (!pool) {
-      return res.json({ connected: false, message: 'No connection string configured' })
-    }
-    const dbResult = await pool.request().query<{ name: string }>('SELECT DB_NAME() AS name')
-    const dbName = dbResult.recordset[0]?.name ?? 'unknown'
-    return res.json({ connected: true, message: `Connected to Azure SQL Server (${dbName})` })
+    const result = await db.raw('SELECT 1 AS val')
+    const dbName = await db.raw('SELECT current_database() AS name')
+      .catch(() => db.raw("SELECT DB_NAME() AS name"))
+      .catch(() => ({ rows: [{ name: 'local.sqlite' }] }))
+    const name = dbName?.rows?.[0]?.name ?? dbName?.[0]?.name ?? 'unknown'
+    return res.json({ connected: true, message: `Connected to Azure SQL Server (${name})` })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     return res.json({ connected: false, message })
@@ -27,10 +26,8 @@ router.get('/status', async (_req, res) => {
 // APP_CONFIG
 router.get('/config', async (_req, res) => {
   try {
-    const pool = await connectDB()
-    if (!pool) return res.status(503).json({ error: 'Database not connected' })
-    const result = await pool.request().query('SELECT config_key, config_value FROM APP_CONFIG')
-    const config = Object.fromEntries(result.recordset.map(r => [r.config_key, r.config_value]))
+    const rows = await db('APP_CONFIG').select('config_key', 'config_value')
+    const config = Object.fromEntries(rows.map((r: { config_key: string; config_value: string }) => [r.config_key, r.config_value]))
     return res.json(config)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'

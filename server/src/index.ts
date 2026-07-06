@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import express from 'express'
 import path from 'path'
-import { connectDB } from './db'
+import db from './db'
 import apiRouter from './routes/api'
 
 const app = express()
@@ -21,7 +21,8 @@ app.get('*', (_req, res) => {
 
 async function start() {
   try {
-    await connectDB()
+    await db.raw('SELECT 1')
+    console.log('Database connected')
   } catch (err) {
     console.error('Database connection failed on startup — server will start without DB:', err)
   }

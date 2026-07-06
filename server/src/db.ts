@@ -1,51 +1,45 @@
-import sql from 'mssql'
+import Knex from 'knex'
+import path from 'path'
 
-let pool: sql.ConnectionPool | null = null
+const client = process.env.DB_CLIENT || 'better-sqlite3'
 
-function parseConnectionString(connStr: string): sql.config {
+function buildConfig(): Knex.Knex.Config {
+  if (client === 'better-sqlite3') {
+    return {
+      client: 'better-sqlite3',
+      connection: {
+        filename: path.join(__dirname, '../../db/local.sqlite'),
+      },
+      useNullAsDefault: true,
+    }
+  }
+
+  // MSSQL — parse ADO.NET connection string
+  const connStr = process.env.AZURE_SQL_CONNECTION_STRING || ''
   const parts: Record<string, string> = {}
   let bareServer = ''
-
-  connStr.split(';').forEach((segment) => {
-    const eq = segment.indexOf('=')
-    if (eq === -1) {
-      // Bare segment (e.g. "tcp:host,port") — treat as server
-      if (segment.trim()) bareServer = segment.trim()
-      return
-    }
-    const key = segment.slice(0, eq).trim().toLowerCase()
-    const val = segment.slice(eq + 1).trim()
-    parts[key] = val
+  connStr.split(';').forEach((seg) => {
+    const eq = seg.indexOf('=')
+    if (eq === -1) { if (seg.trim()) bareServer = seg.trim(); return }
+    parts[seg.slice(0, eq).trim().toLowerCase()] = seg.slice(eq + 1).trim()
   })
-
   const serverRaw = (parts['server'] || parts['data source'] || bareServer).replace(/^tcp:/i, '')
   const [serverHost, portStr] = serverRaw.split(',')
-  const port = portStr ? parseInt(portStr, 10) : 1433
 
   return {
-    server: serverHost,
-    port,
-    database: parts['database'] || parts['initial catalog'],
-    user: parts['user id'] || parts['uid'],
-    password: parts['password'] || parts['pwd'],
-    options: {
-      encrypt: (parts['encrypt'] || 'true').toLowerCase() !== 'false',
-      trustServerCertificate: (parts['trustservercertificate'] || '').toLowerCase() === 'true',
+    client: 'mssql',
+    connection: {
+      server: serverHost,
+      port: portStr ? parseInt(portStr, 10) : 1433,
+      database: parts['database'] || parts['initial catalog'],
+      user: parts['user id'] || parts['uid'],
+      password: parts['password'] || parts['pwd'],
+      options: { encrypt: true, trustServerCertificate: false },
     },
   }
 }
 
-export async function connectDB(): Promise<sql.ConnectionPool | null> {
-  if (pool) return pool
-  const connStr = process.env.AZURE_SQL_CONNECTION_STRING
-  if (!connStr) {
-    console.warn('AZURE_SQL_CONNECTION_STRING is not set — skipping database connection')
-    return null
-  }
-  const config = parseConnectionString(connStr)
-  pool = await sql.connect(config)
-  console.log('Connected to Azure SQL Database')
-  return pool
-}
+const db = Knex(buildConfig())
 
-export { sql }
+export default db
+
