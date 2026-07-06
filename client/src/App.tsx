@@ -24,7 +24,7 @@ export default function App() {
         {status && (
           <div className={`status-badge ${status.connected ? 'status-connected' : 'status-disconnected'}`}>
             <span className="status-dot" />
-            {status.connected ? 'Connected' : 'Disconnected'}
+            {status.message}
           </div>
         )}
       </main>

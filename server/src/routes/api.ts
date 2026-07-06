@@ -15,8 +15,9 @@ router.get('/status', async (_req, res) => {
     if (!pool) {
       return res.json({ connected: false, message: 'No connection string configured' })
     }
-    await pool.request().query('SELECT 1')
-    return res.json({ connected: true, message: 'Connected to Azure SQL Database' })
+    const dbResult = await pool.request().query<{ name: string }>('SELECT DB_NAME() AS name')
+    const dbName = dbResult.recordset[0]?.name ?? 'unknown'
+    return res.json({ connected: true, message: `Connected to Azure SQL Server (${dbName})` })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     return res.json({ connected: false, message })
