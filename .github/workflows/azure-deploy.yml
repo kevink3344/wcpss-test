@@ -36,10 +36,10 @@ jobs:
         run: npm ci
 
       - name: Install client dependencies
-        run: cd client && npm ci
+        run: cd client && npm ci --include=dev
 
       - name: Install server dependencies
-        run: cd server && npm ci
+        run: cd server && npm ci --include=dev
 
       - name: Build client (outputs to server/public)
         run: cd client && npm run build
