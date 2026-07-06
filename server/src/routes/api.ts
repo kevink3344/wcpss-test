@@ -11,11 +11,10 @@ router.get('/health', (_req, res) => {
 // Database connection status
 router.get('/status', async (_req, res) => {
   try {
-    const result = await db.raw('SELECT 1 AS val')
-    const dbName = await db.raw('SELECT current_database() AS name')
-      .catch(() => db.raw("SELECT DB_NAME() AS name"))
-      .catch(() => ({ rows: [{ name: 'local.sqlite' }] }))
-    const name = dbName?.rows?.[0]?.name ?? dbName?.[0]?.name ?? 'unknown'
+    const isMssql = (process.env.DB_CLIENT || 'better-sqlite3') === 'mssql'
+    const nameQuery = isMssql ? "SELECT DB_NAME() AS name" : "SELECT 'local.sqlite' AS name"
+    const result = await db.raw(nameQuery)
+    const name = result?.[0]?.name ?? result?.rows?.[0]?.name ?? 'unknown'
     return res.json({ connected: true, message: `Connected to Azure SQL Server (${name})` })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
