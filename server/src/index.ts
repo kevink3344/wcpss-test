@@ -22,7 +22,11 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 async function start() {
-  await connectDB()
+  try {
+    await connectDB()
+  } catch (err) {
+    console.error('Database connection failed on startup — server will start without DB:', err)
+  }
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
   })

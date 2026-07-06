@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: wcpss-test-app     # Azure Web App name
+  AZURE_WEBAPP_NAME: wcpss-test            # Azure Web App name
   NODE_VERSION: '20.x'
 
 permissions:
