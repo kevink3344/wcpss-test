@@ -1,8 +1,10 @@
 import 'dotenv/config'
 import express from 'express'
 import path from 'path'
+import swaggerUi from 'swagger-ui-express'
 import db from './db'
 import apiRouter from './routes/api'
+import { swaggerSpec } from './swagger'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -11,6 +13,10 @@ app.use(express.json())
 
 // API routes
 app.use('/api', apiRouter)
+
+// Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec))
 
 // Serve React build
 const publicPath = path.join(__dirname, '..', 'public')
