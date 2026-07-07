@@ -97,8 +97,8 @@ class MssqlClient implements DbClient {
     await this.knex(table).insert(rows)
   }
 
-  async execute(sql: string, args: unknown[] = []): Promise<Row[]> {
-    const result = await this.knex.raw(sql, args)
+  async execute(sql: string, args: InArgs = []): Promise<Row[]> {
+    const result = await this.knex.raw(sql, args as unknown[])
     return result?.[0] ?? result?.rows ?? []
   }
 
