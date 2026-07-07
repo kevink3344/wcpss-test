@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import type { InArgs } from '@libsql/client'
 import db from '../db'
 
 const router = Router()
@@ -55,12 +56,12 @@ router.put('/settings/:key', async (req, res) => {
     if (client === 'mssql') {
       await db.execute(
         'UPDATE APP_SETTINGS SET setting_value = ?, updated_at = GETDATE() WHERE setting_key = ?',
-        [value, key]
+        [value, key] as InArgs
       )
     } else {
       await db.execute(
         "UPDATE APP_SETTINGS SET setting_value = ?, updated_at = datetime('now') WHERE setting_key = ?",
-        [value, key]
+        [value, key] as InArgs
       )
     }
     return res.json({ ok: true })

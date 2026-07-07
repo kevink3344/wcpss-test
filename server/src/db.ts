@@ -1,5 +1,5 @@
 import Knex from 'knex'
-import { createClient, type Client as LibsqlClient, type InStatement } from '@libsql/client'
+import { createClient, type Client as LibsqlClient, type InStatement, type InArgs } from '@libsql/client'
 
 export type Row = Record<string, unknown>
 
@@ -7,7 +7,7 @@ export interface DbClient {
   raw(sql: string): Promise<Row[]>
   select(table: string, columns?: string[]): Promise<Row[]>
   insert(table: string, rows: Row[]): Promise<void>
-  execute(sql: string, args?: unknown[]): Promise<Row[]>
+  execute(sql: string, args?: InArgs): Promise<Row[]>
   destroy(): Promise<void>
 }
 
@@ -37,13 +37,13 @@ class TursoClient implements DbClient {
       const keys = Object.keys(row)
       return {
         sql: `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${keys.map(() => '?').join(', ')})`,
-        args: Object.values(row) as import('@libsql/client').InArgs,
+        args: Object.values(row) as InArgs,
       }
     })
     await this.client.batch(stmts, 'write')
   }
 
-  async execute(sql: string, args: unknown[] = []): Promise<Row[]> {
+  async execute(sql: string, args: InArgs = []): Promise<Row[]> {
     const result = await this.client.execute({ sql, args })
     return result.rows as Row[]
   }
