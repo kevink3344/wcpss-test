@@ -50,6 +50,7 @@ jobs:
       - name: Create deployment package
         run: |
           cp package.json server/
+          cp -r db server/db
           cd server && zip -r ../deploy.zip . -x "*.ts" "src/*" "node_modules/.cache/*"
 
       - name: Upload artifact for deployment
