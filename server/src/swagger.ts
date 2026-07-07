@@ -46,7 +46,7 @@ const options: swaggerJsdoc.Options = {
                     type: 'object',
                     properties: {
                       connected: { type: 'boolean' },
-                      message: { type: 'string', example: 'Connected to Azure SQL Server (wcpss-data-collection)' },
+                      message: { type: 'string', example: 'Connected to Azure SQL Server' },
                     },
                   },
                 },

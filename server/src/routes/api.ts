@@ -13,11 +13,9 @@ router.get('/health', (_req, res) => {
 router.get('/status', async (_req, res) => {
   try {
     const isMssql = (process.env.DB_CLIENT || 'turso') === 'mssql'
-    const rows = await db.raw(isMssql ? 'SELECT DB_NAME() AS name' : "SELECT 'turso' AS name")
-    // Knex MSSQL returns [[{name}]], libsql returns [{name}]
-    const row = Array.isArray(rows[0]) ? rows[0][0] : rows[0]
-    const name = (row as Record<string, unknown>)?.name ?? 'unknown'
-    return res.json({ connected: true, message: `Connected to Azure SQL Server (${name})` })
+    await db.raw('SELECT 1')
+    const message = isMssql ? 'Connected to Azure SQL Server' : 'Connected to Turso SQLite'
+    return res.json({ connected: true, message })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     return res.json({ connected: false, message })
