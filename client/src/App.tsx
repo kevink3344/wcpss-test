@@ -63,11 +63,11 @@ export default function App() {
       <header className="header">
         <h1 className="title">WCPSS Test</h1>
         <div className="header-actions">
-          <button className="icon-btn" onClick={() => setDark(d => !d)} title={dark ? 'Switch to light mode' : 'Switch to dark mode'} aria-label="Toggle dark mode">
-            {dark ? <SunIcon /> : <MoonIcon />}
-          </button>
           <button className="icon-btn" title="Settings" aria-label="Settings">
             <SettingsIcon />
+          </button>
+          <button className="icon-btn" onClick={() => setDark(d => !d)} title={dark ? 'Switch to light mode' : 'Switch to dark mode'} aria-label="Toggle dark mode">
+            {dark ? <SunIcon /> : <MoonIcon />}
           </button>
           <button className="icon-btn" title="Profile" aria-label="User profile">
             <UserIcon />
