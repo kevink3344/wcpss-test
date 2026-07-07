@@ -86,7 +86,9 @@ class MssqlClient implements DbClient {
 
   async raw(sql: string): Promise<Row[]> {
     const result = await this.knex.raw(sql)
-    return result?.[0] ?? result?.rows ?? []
+    // Knex MSSQL: result is [recordset, metadata] — recordset is result[0]
+    const rows = Array.isArray(result) ? result[0] : (result?.rows ?? [])
+    return rows as Row[]
   }
 
   async select(table: string, columns: string[] = ['*']): Promise<Row[]> {
