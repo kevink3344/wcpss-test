@@ -42,7 +42,12 @@ router.get('/settings', async (_req, res) => {
     const rows = await db.select('APP_SETTINGS', ['setting_key', 'setting_value', 'label', 'description'])
     return res.json(rows)
   } catch (err) {
+    // Table may not exist yet — return empty array so the UI degrades gracefully
     const message = err instanceof Error ? err.message : 'Unknown error'
+    if (message.toLowerCase().includes('invalid object name') || message.toLowerCase().includes('no such table')) {
+      return res.json([])
+    }
+    return res.status(500).json({ error: message })
     return res.status(500).json({ error: message })
   }
 })
