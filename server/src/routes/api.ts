@@ -11,10 +11,11 @@ router.get('/health', (_req, res) => {
 // Database connection status
 router.get('/status', async (_req, res) => {
   try {
-    const isMssql = (process.env.DB_CLIENT || 'better-sqlite3') === 'mssql'
-    const nameQuery = isMssql ? "SELECT DB_NAME() AS name" : "SELECT 'local.sqlite' AS name"
-    const result = await db.raw(nameQuery)
-    const name = result?.[0]?.name ?? result?.rows?.[0]?.name ?? 'unknown'
+    const isMssql = (process.env.DB_CLIENT || 'turso') === 'mssql'
+    const rows = isMssql
+      ? await db.raw('SELECT DB_NAME() AS name')
+      : await db.raw("SELECT 'turso' AS name")
+    const name = (rows[0] as Record<string, unknown>)?.name ?? 'unknown'
     return res.json({ connected: true, message: `Connected to Azure SQL Server (${name})` })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
@@ -25,8 +26,8 @@ router.get('/status', async (_req, res) => {
 // APP_CONFIG
 router.get('/config', async (_req, res) => {
   try {
-    const rows = await db('APP_CONFIG').select('config_key', 'config_value')
-    const config = Object.fromEntries(rows.map((r: { config_key: string; config_value: string }) => [r.config_key, r.config_value]))
+    const rows = await db.select('APP_CONFIG', ['config_key', 'config_value'])
+    const config = Object.fromEntries(rows.map(r => [r.config_key, r.config_value]))
     return res.json(config)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
