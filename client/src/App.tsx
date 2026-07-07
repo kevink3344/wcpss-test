@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import SettingsDrawer from './SettingsDrawer'
 
 type DbStatus = {
   connected: boolean
@@ -46,12 +47,21 @@ function UserIcon() {
 export default function App() {
   const [status, setStatus] = useState<DbStatus | null>(null)
   const [dark, setDark] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [appTitle, setAppTitle] = useState('WCPSS Test')
 
   useEffect(() => {
     fetch('/api/status')
       .then((r) => r.json())
       .then((data: DbStatus) => setStatus(data))
       .catch(() => setStatus({ connected: false, message: 'Could not reach server' }))
+    fetch('/api/settings')
+      .then((r) => r.json())
+      .then((data: { setting_key: string; setting_value: string }[]) => {
+        const title = data.find((s) => s.setting_key === 'APP_TITLE')?.setting_value
+        if (title) setAppTitle(title)
+      })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -61,9 +71,9 @@ export default function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1 className="title">WCPSS Test</h1>
+        <h1 className="title">{appTitle}</h1>
         <div className="header-actions">
-          <button className="icon-btn" title="Settings" aria-label="Settings">
+          <button className="icon-btn" title="Settings" aria-label="Settings" onClick={() => setSettingsOpen(true)}>
             <SettingsIcon />
           </button>
           <button className="icon-btn" onClick={() => setDark(d => !d)} title={dark ? 'Switch to light mode' : 'Switch to dark mode'} aria-label="Toggle dark mode">
@@ -82,6 +92,11 @@ export default function App() {
           </div>
         )}
       </main>
+      <SettingsDrawer
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onTitleChange={setAppTitle}
+      />
     </div>
   )
 }
