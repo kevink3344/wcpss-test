@@ -98,7 +98,7 @@ class MssqlClient implements DbClient {
   }
 
   async execute(sql: string, args: InArgs = []): Promise<Row[]> {
-    const result = await this.knex.raw(sql, args as unknown[])
+    const result = await this.knex.raw(sql, args as string[])
     return result?.[0] ?? result?.rows ?? []
   }
 
