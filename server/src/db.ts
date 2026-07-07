@@ -1,5 +1,5 @@
 import Knex from 'knex'
-import { createClient, type Client as LibsqlClient } from '@libsql/client'
+import { createClient, type Client as LibsqlClient, type InStatement } from '@libsql/client'
 
 export type Row = Record<string, unknown>
 
@@ -33,11 +33,11 @@ class TursoClient implements DbClient {
   }
 
   async insert(table: string, rows: Row[]): Promise<void> {
-    const stmts = rows.map((row) => {
+    const stmts: InStatement[] = rows.map((row) => {
       const keys = Object.keys(row)
       return {
         sql: `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${keys.map(() => '?').join(', ')})`,
-        args: Object.values(row) as unknown[],
+        args: Object.values(row) as import('@libsql/client').InArgs,
       }
     })
     await this.client.batch(stmts, 'write')
